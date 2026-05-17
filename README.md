@@ -1,2 +1,2 @@
-# efc1
-Trabalho de Refatoração guiada por SOLID, Clean Code e Padrões GoF. Disciplina de Padrões e Arquitetura de Software.
+# EFC1: Refatoração Guiada por SOLID, Clean Code e GoF.
+--
