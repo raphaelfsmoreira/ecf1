@@ -15,96 +15,196 @@ def sis(tmp_path, monkeypatch):
     yield s
     s.close()
 
+# Iniciando os casos de happy paths (caminhos felizes, em que o fluxo das atividades é o normal e esperado).
 
-# Teste de pedido normal com três produtos.
-# Dois produtos do tipo produto1 de preço 100
-# Um produo do tipo produto2 e preço 50. O produto 2 recebe desconto de 10%
-# Valor total do pedido esperado de 245.
-def test_pedido_normal_calcula_total_corretamente(sis):
+# FLUXO DE COMPRA PARA UM PEDIDO NORMAL
+# Caracteriza o comportamento atual do código legado ao criar um pedido normal.
+#
+# Cenário:
+# - 2 unidades de produto1, tipo normal: 100 * 2 = 200
+# - 1 unidade de produto2, tipo desc10: 50 * 1 * 0.9 = 45
+# - Total esperado: 245
+#
+# O teste verifica:
+# - se o pedido foi salvo corretamente;
+# - se o total foi calculado conforme a regra atual;
+# - se o status inicial é "pendente";
+# - se os itens foram persistidos e recuperados;
+# - se a mensagem de email foi impressa.
+def test_pedido_normal_calcula_total_status_e_saida(sis, capsys):
     itens = [
         {'nome': 'produto1', 'p': 100, 'q': 2, 'tipo': 'normal'},
         {'nome': 'produto2', 'p': 50, 'q': 1, 'tipo': 'desc10'}
     ]
 
     id_ped = sis.add_ped('Joao Silva', itens, 'normal')
+    saida = capsys.readouterr().out
     pedido = sis.get_ped(id_ped)
+
+    assert pedido['cli'] == 'Joao Silva'
     assert pedido['tot'] == pytest.approx(245.0)
     assert pedido['st'] == 'pendente'
+    assert pedido['tp'] == 'normal'
+    assert pedido['itens'] == itens
+    assert "Email enviado para Joao Silva: Pedido recebido!" in saida
 
-
-def test_pedido_vip_aplica_desconto_de_5_por_cento(sis):
+# FLUXO DE COMPRA PARA UM PEDIDO VIP
+#
+# Cenário:
+# - 1 unidade de produto3, tipo desc20: 200 * 1 * 0.8 = 160
+# - Cliente VIP recebe 5% de desconto global: 160 * 0.95 = 152
+# - Total esperado: 152
+#
+# O teste verifica:
+# - cálculo do desconto do item;
+# - cálculo do desconto VIP;
+# - status inicial;
+# - persistência dos dados;
+# - notificações específicas do cliente VIP.
+def test_pedido_vip_calcula_total_status_e_saida(sis, capsys):
     itens = [
-        {'nome': 'p1', 'p': 100, 'q': 1, 'tipo': 'normal'}
+        {'nome': 'produto3', 'p': 200, 'q': 1, 'tipo': 'desc20'}
     ]
 
-    id_ped = sis.add_ped('Maria', itens, 'vip')
+    id_ped = sis.add_ped('Maria Santos', itens, 'vip')
+
+    saida = capsys.readouterr().out
     pedido = sis.get_ped(id_ped)
-    assert pedido['tot'] == pytest.approx(95.0)
 
-def test_pedido_vip_aplica_desconto_de_5_por_cento(sis):
+    assert pedido['cli'] == 'Maria Santos'
+    assert pedido['tot'] == pytest.approx(152.0)
+    assert pedido['st'] == 'pendente'
+    assert pedido['tp'] == 'vip'
+    assert pedido['itens'] == itens
 
+    assert "Email enviado para Maria Santos: Pedido recebido!" in saida
+    assert "SMS enviado para Maria Santos: Pedido VIP recebido!" in saida
+
+
+# FLUXO DE COMPRA PARA UM PEDIDO CORPORATIVO
+#
+# Cenário:
+# - 5 unidades de produto1: 100 * 5 = 500
+# - Cliente corporativo recebe 10% de desconto global
+# - Total esperado: 450
+#
+# O teste verifica:
+# - cálculo do desconto corporativo;
+# - status inicial;
+# - persistência dos dados;
+# - notificações específicas do tipo corporativo.
+def test_pedido_corporativo_calcula_total_status_e_saida(sis, capsys):
     itens = [
-        {
-            'nome': 'p1',
-            'p': 100,
-            'q': 1,
-            'tipo': 'normal'
-        }
+        {'nome': 'produto1', 'p': 100, 'q': 5, 'tipo': 'normal'}
     ]
 
-    id_ped = sis.add_ped('Maria', itens, 'vip')
+    id_ped = sis.add_ped('Empresa XYZ', itens, 'corporativo')
+
+    saida = capsys.readouterr().out
     pedido = sis.get_ped(id_ped)
 
-    assert pedido['tot'] == pytest.approx(95.0)
+    assert pedido['cli'] == 'Empresa XYZ'
+    assert pedido['tot'] == pytest.approx(450.0)
+    assert pedido['st'] == 'pendente'
+    assert pedido['tp'] == 'corporativo'
+    assert pedido['itens'] == itens
+
+    assert "Email enviado para Empresa XYZ: Pedido recebido!" in saida
+    assert "Notificação enviada ao gerente de conta de Empresa XYZ" in saida
 
 
-def test_pagamento_insuficiente_falha(sis):
+# FLUXOS DE TESTE PARA PAGAMENTOS
 
+# FLUXO DE PAGAMENTO VIA BOLETO
+#
+# Cenário:
+# - Um pedido normal é criado corretamente
+# - O pagamento é realizado via boleto
+#
+# O teste verifica:
+# - se o metodo retorna True;
+# - se o boleto é gerado;
+# - se o status do pedido permanece "pendente";
+# - se as mensagens corretas são exibidas.
+#
+# OBS:
+# No comportamento atual do legado, pagamentos via boleto
+# NÃO aprovam automaticamente o pedido.
+def test_pagamento_boleto_gera_boleto_mas_nao_aprova_pedido(sis, capsys):
     itens = [
-        {
-            'nome': 'p1',
-            'p': 100,
-            'q': 1,
-            'tipo': 'normal'
-        }
+        {'nome': 'produto1', 'p': 100, 'q': 1, 'tipo': 'normal'}
     ]
 
-    id_ped = sis.add_ped('Joao', itens, 'normal')
+    id_ped = sis.add_ped('Joao Silva', itens, 'normal')
 
-    assert sis.proc_pag(id_ped, 'cartao', 50) is False
+    resultado = sis.proc_pag(id_ped, 'boleto', 100)
 
+    saida = capsys.readouterr().out
+    pedido = sis.get_ped(id_ped)
 
-def test_pix_aprova_pedido_automaticamente(sis):
+    assert resultado is True
+    assert pedido['st'] == 'pendente'
 
+    assert "Gerando boleto..." in saida
+    assert "Boleto gerado!" in saida
+
+# EXCEÇÃO: TESTE PARA VALOR INSUFICIENTE NA TRANSAÇÃO DE UMA COMPRA.
+# Ele cria o pedido add_ped e o deixa como pendente.
+# Porém, ao processar o pagamento, o valor passado como parâmetro (99) é menor do que o subtotal da compra (100).
+# Isso deve retornar False do metdo proc_pag (em resultado) e o print de Valor Insuficiente.
+# Além disso, o status do pedido deve continuar como pendente.
+def test_pagamento_insuficiente_nao_aprova(sis, capsys):
     itens = [
-        {
-            'nome': 'p1',
-            'p': 100,
-            'q': 1,
-            'tipo': 'normal'
-        }
+        {'nome': 'produto1', 'p': 100, 'q': 1, 'tipo': 'normal'}
     ]
 
-    id_ped = sis.add_ped('Joao', itens, 'normal')
+    id_ped = sis.add_ped('Joao Silva', itens, 'normal')
+    resultado = sis.proc_pag(id_ped, 'cartao', 99)
 
-    sis.proc_pag(id_ped, 'pix', 100)
+    pedido = sis.get_ped(id_ped)
+    saida = capsys.readouterr().out
 
-    assert sis.get_ped(id_ped)['st'] == 'aprovado'
+    assert resultado is False
+    assert pedido['st'] == 'pendente'
+    assert "Valor insuficiente!" in saida
 
-
-def test_boleto_nao_aprova_automaticamente(sis):
-
+# EXCEÇÃO: FLUXO DE PAGAMENTO COM METODO INVALIDO
+#
+# Cenário:
+# - Um pedido normal é criado corretamente
+# - O usuário tenta pagar utilizando um metodo inexistente
+#
+# O teste verifica:
+# - se o pagamento falha;
+# - se o metodo retorna False;
+# - se o status do pedido permanece "pendente";
+# - se a mensagem de erro correta é exibida.
+def test_pagamento_com_metodo_invalido_nao_aprova_pedido(sis, capsys):
     itens = [
-        {
-            'nome': 'p1',
-            'p': 100,
-            'q': 1,
-            'tipo': 'normal'
-        }
+        {'nome': 'produto1', 'p': 100, 'q': 1, 'tipo': 'normal'}
     ]
 
-    id_ped = sis.add_ped('Joao', itens, 'normal')
+    id_ped = sis.add_ped('Joao Silva', itens, 'normal')
 
-    sis.proc_pag(id_ped, 'boleto', 100)
+    resultado = sis.proc_pag(id_ped, 'bitcoin', 100)
 
-    assert sis.get_ped(id_ped)['st'] == 'pendente'
+    saida = capsys.readouterr().out
+    pedido = sis.get_ped(id_ped)
+
+    assert resultado is False
+    assert pedido['st'] == 'pendente' # Pedido permanece com status pendente
+    assert "Metodo de pagamento invalido!" in saida # Retorno do print como inválido
+
+
+# BUSCA DE PEDIDO INEXISTENTE
+#
+# Cenário:
+# - O sistema recebe um ID que não existe no banco.
+#
+# O teste verifica:
+# - se o metodo retorna None para pedidos inexistentes.
+def test_busca_pedido_inexistente_retorna_none(sis):
+
+    pedido = sis.get_ped(999)
+
+    assert pedido is None
