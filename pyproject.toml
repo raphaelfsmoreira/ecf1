@@ -1,12 +1,18 @@
 [project]
+
 name="ecf1"
 description="Projeto de refatoração para disciplina de Padrões e Arquitetura de Software"
+requires-python = ">=3.11"
 
 authors=[
     {name="Raphael Fernandes de Sellos Moreira"}
 ]
 
 readme="README.md"
+
+dependecies=[
+    "pytest==9.0.3"
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
