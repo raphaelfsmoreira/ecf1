@@ -6,7 +6,7 @@ from datetime import datetime
 class Sis:
     def __init__(self):
         self.db = sqlite3.connect('loja.db')
-        self.c = self.db.cursor
+        self.c = self.db.cursor()
         self.c.execute('''
                 CREATE TABLE IF NOT EXISTS ped(
                 id INTEGER PRIMARY KEY, 
@@ -86,25 +86,25 @@ class Sis:
             )   
             self.db.commit()
 
-        if s == 'aprovado':
-            print(f"Email enviado para {p['cli']}: Pedido aprovado!")
+            if s == 'aprovado':
+                print(f"Email enviado para {p['cli']}: Pedido aprovado!")
 
-            if p['tp'] == 'vip':
-                print(f"SMS enviado para {p['cli']}: Pedido aprovado!")
+                if p['tp'] == 'vip':
+                    print(f"SMS enviado para {p['cli']}: Pedido aprovado!")
 
-        elif s == 'enviado':
-            print(f"Email enviado para {p['cli']}: Pedido enviado!")
+            elif s == 'enviado':
+                print(f"Email enviado para {p['cli']}: Pedido enviado!")
 
-        elif s == 'entregue':
-            print(f"Email enviado para {p['cli']}: Pedido entregue!")
+            elif s == 'entregue':
+                print(f"Email enviado para {p['cli']}: Pedido entregue!")
 
-            if p['tp'] == 'vip':
-                pts = int(p['tot'] * 2)
-                print(f"Cliente VIP ganhou {pts} pontos!")
+                if p['tp'] == 'vip':
+                    pts = int(p['tot'] * 2)
+                    print(f"Cliente VIP ganhou {pts} pontos!")
 
-            elif p['tp'] == 'corporativo':
-                pts = int(p['tot'] * 1.5)
-                print(f"Cliente corporativo ganhou {pts} pontos!")
+                elif p['tp'] == 'corporativo':
+                    pts = int(p['tot'] * 1.5)
+                    print(f"Cliente corporativo ganhou {pts} pontos!")
 
             else:
                 pts = int(p['tot'])
@@ -310,7 +310,7 @@ def main():
     ]
 
     if s.validar_estoque(its2):
-        id2 = s.add_ped('Mari Santos', its2, 'vip')
+        id2 = s.add_ped('Maria Santos', its2, 'vip')
         s.proc_pag(id2, 'pix', 160)
     
     its3 = [
