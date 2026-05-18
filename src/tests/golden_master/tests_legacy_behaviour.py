@@ -5,10 +5,10 @@
 # A partir do código refatorado, consulta-se os Golden Masters e pergunta... Essa funcionalidade está funcionando como antes?
 
 import pytest
-from legacy import Sis
+from src.legacy import Sis
 
 @pytest.fixture
-def sis(tmp_path, monkeypatch)?
+def sis(tmp_path, monkeypatch):
     """ Isola o banco em diretorio temporario por teste"""
     monkeypatch.chdir(tmp_path)
     s = Sis()
