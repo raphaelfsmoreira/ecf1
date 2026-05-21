@@ -110,6 +110,8 @@ class Sis:
                 pts = int(p['tot'])
                 print(f"Cliente ganhou {pts} pontos!")
 
+    # Por incrivel que pareça, o código legado busca o total dos pedidos de um cliente pelo
+    # NOME DO CLIENTE. No caso n é o nome, não um ID...
     def calc_tot_cli(self, n):
         self.c.execute("SELECT * FROM ped WHERE cli=?", (n,))
         rs = self.c.fetchall()
