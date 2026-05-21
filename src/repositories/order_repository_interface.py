@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
 from src.models.order import Order
-from src.models.order_status import OrderStatus
+from src.models.enums import OrderStatus
+
 
 # Definindo o contrato do Repositorio de Pedidos...
 class OrderRepositoryInterface(ABC):
