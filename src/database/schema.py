@@ -8,7 +8,7 @@ cli = customer_name
 tot = total_amount
 st = status
 dt = created_at
-tp = payment_type
+tp = customer_type
 """
 
 def create_tables(db):

@@ -1,5 +1,4 @@
 import json
-from dataclasses import asdict
 from datetime import datetime
 
 from src.repositories.order_repository_interface import OrderRepositoryInterface
@@ -18,8 +17,15 @@ class OrderRepository(OrderRepositoryInterface):
 
     def add_order(self, order: Order) -> int:
 
-        # Converte a lista de dataclasses em uma lista de dicionários antes do dumps
-        items_dict = [asdict(item) for item in order.items]
+        items_dict = [
+            {
+                "product_name": item.product_name,
+                "unit_price": item.unit_price,
+                "quantity": item.quantity,
+                "discount_type": item.discount_type.value
+            }
+            for item in order.items
+        ]
 
         self.db.execute(
             '''
@@ -45,14 +51,20 @@ class OrderRepository(OrderRepositoryInterface):
 
         self.db.commit()
 
-        return int(self.db.lastrowid())
+        return self.db.lastrowid()
 
     def get_order_by_id(self, order_id: int) -> Order | None:
 
         # O ideal não é usar * e sim explicitar a ordem das colunas.
 
         self.db.execute('''
-            SELECT *
+            SELECT  id, 
+                    customer_name, 
+                    items, 
+                    total_amount, 
+                    status, 
+                    created_at, 
+                    customer_type
             FROM orders
             WHERE id = ?
             ''', (order_id,),
@@ -128,8 +140,11 @@ class OrderRepository(OrderRepositoryInterface):
 
         result = self.db.fetchone()
 
-        # Aqui retorna o elemento da tupla da query ou zero caso result seja None (cliente não existe no banco...)
-        return result[0] or 0
+        # Se o cliente não existir, retorna zero
+        if result is None or result[0] is None:
+            return 0.0
+
+        return float(result[0])
 
 
     # Aqui reaproveitamos o metodo update status...
@@ -137,5 +152,3 @@ class OrderRepository(OrderRepositoryInterface):
     def cancel_order(self, order_id: int) -> None:
 
         self.update_status(order_id, OrderStatus.CANCELLED)
-
-
