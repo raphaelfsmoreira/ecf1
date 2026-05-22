@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 # Import dos Enums
-from src.models.enums import CustomerType, OrderStatus
+from src.models.enums import CustomerType, OrderStatus, PaymentType
 
 # Import do Modelo de Item
 from src.models.order_item import OrderItem
@@ -24,6 +24,7 @@ class Order:
     created_at: datetime
 
     customer_type: CustomerType
+    payment_type: PaymentType | None = None
 
     # Id pode ser None, pois o objeto primeiro é criado e depois o SQLite
     # atribui um id para ele.
