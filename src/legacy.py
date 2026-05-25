@@ -252,44 +252,7 @@ class Sis:
 
 
 class PedEspecial(Sis):
-    def add_ped(self, n, its, t):
-
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        tot = 0
-        for i in its:
-            if i['tipo'] == 'normal':
-                tot += i['p'] * i['q']
-            elif i['tipo'] == 'desc10':
-                tot += i['p'] * i['q'] * 0.9
-            elif i['tipo'] == 'desc20':
-                tot += i['p'] * i['q'] * 0.8
-            
-        tot = tot * 1.15
-
-        its_str = json.dumps(its)
-
-        self.c.execute(
-            "INSERT INTO ped (cli, itens, tot, st, dt, tp) VALUES (?, ?, ?, ?, ?, ?)",
-            (n, its_str, tot, 'pendente', dt, t)
-        )
-
-        self.db.commit()
-        print(f"Email especial enviado para {n}: Pedido especial recebido!")
-
-        return self.c.lastrowid
-    
-    
-    def upd_st(self, id, s):
-        # PedEspecial pula direto para qualquer estado
-        # ignorando transicoes intermediarias do pai
-
-        p = self.get_ped(id)
-        
-        if p:
-            self.c.execute("UPDATE ped SET st=? WHERE id=?", (s, id))
-            self.db.commit()
-            print(f"Pedido especial {id} -> {s}")
+    pass
     
 
 def main():
