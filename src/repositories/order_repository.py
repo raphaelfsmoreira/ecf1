@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from src.repositories.order_repository_interface import OrderRepositoryInterface
+from src.database.database_interface import DatabaseInterface
 
 from src.models.order import Order
 from src.models.order_item import OrderItem
@@ -12,7 +13,7 @@ from src.models.enums import CustomerType, DiscountType, OrderStatus
 
 class OrderRepository(OrderRepositoryInterface):
 
-    def __init__(self, db) -> None:
+    def __init__(self, db: DatabaseInterface) -> None:
         self.db = db
 
     def add_order(self, order: Order) -> int:
@@ -51,7 +52,7 @@ class OrderRepository(OrderRepositoryInterface):
 
         self.db.commit()
 
-        return self.db.lastrowid()
+        return int(self.db.lastrowid())
 
     def get_order_by_id(self, order_id: int) -> Order | None:
 

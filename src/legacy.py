@@ -1,10 +1,11 @@
 import sqlite3
 import json
 from datetime import datetime
+from typing import Any, Optional, List, Dict, cast
 
 
 class Sis:
-    def __init__(self):
+    def __init__(self) -> None:
         self.db = sqlite3.connect('loja.db')
         self.c = self.db.cursor()
         self.c.execute('''
@@ -19,10 +20,10 @@ class Sis:
             ''')
         self.db.commit()
 
-    def add_ped(self, n, its, t):
+    def add_ped(self, n: str, its: List[Dict[str, Any]], t: str) -> int:
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        tot = 0
+        tot: float = 0.0
         for i in its:
             if i['tipo'] == 'normal':
                 tot += i['p'] * i['q']
@@ -59,9 +60,9 @@ class Sis:
             print(f"Email enviado para {n}: Pedido recebido!")
             print(f"Notificação enviada ao gerente de conta de {n}")
         
-        return self.c.lastrowid
+        return int(self.c.lastrowid or 0)
 
-    def get_ped(self, id):
+    def get_ped(self, id: int) -> Optional[Dict[str, Any]]:
         self.c.execute("SELECT * FROM ped WHERE id=?", (id,))
         r = self.c.fetchone()
         if r:
@@ -76,7 +77,7 @@ class Sis:
         }
         return None
     
-    def upd_st(self, id, s):
+    def upd_st(self, id: int, s: str) -> None:
         p = self.get_ped(id)
 
         if p:
@@ -112,18 +113,18 @@ class Sis:
 
     # Por incrivel que pareça, o código legado busca o total dos pedidos de um cliente pelo
     # NOME DO CLIENTE. No caso n é o nome, não um ID...
-    def calc_tot_cli(self, n):
+    def calc_tot_cli(self, n: str) -> float:
         self.c.execute("SELECT * FROM ped WHERE cli=?", (n,))
         rs = self.c.fetchall()
 
-        t = 0
+        t: float = 0.0
 
         for r in rs:
             t += r[3]
 
         return t
 
-    def gerar_rel(self, tipo):
+    def gerar_rel(self, tipo: str) -> None:
 
         if tipo == 'vendas':
 
@@ -167,7 +168,7 @@ class Sis:
                 for r in rs:
                     f.write(f"{r[0]},{r[1]}\n")
 
-    def proc_pag(self, id, m, vl):
+    def proc_pag(self, id: int, m: str, vl: float) -> bool:
 
         p = self.get_ped(id)
 
@@ -179,39 +180,56 @@ class Sis:
 
             return False
 
-        if m == 'cartao':
+        # Map legacy method strings to PaymentType where possible and use
+        # the strategy implementations to decide acceptance. We create a
+        # minimal order-like adapter with `total_amount` to satisfy the
+        # strategy interface without importing the full domain model here.
+        from src.models.enums import PaymentType
+        from src.strategies.payment_strategy import strategy_for_payment_type
 
+        class _OrderLike:
+            def __init__(self, total_amount: float) -> None:
+                self.total_amount = total_amount
+
+        method_map = {
+            'cartao': PaymentType.CreditCard,
+            'pix': PaymentType.Pix,
+            'boleto': PaymentType.Boleto,
+            'crypto': PaymentType.Crypto,
+        }
+
+        payment_type = method_map.get(m)
+        if payment_type is None:
+            print("Metodo de pagamento invalido!")
+            return False
+
+        strategy = strategy_for_payment_type(payment_type)
+        order_like = _OrderLike(p['tot'])
+
+        # Preserve legacy prints for UX parity
+        if m == 'cartao':
             print("Processando pagamento com cartao...")
             print("Cartao validado!")
-
-            self.upd_st(id, 'aprovado')
-
-            return True
-        
         elif m == 'pix':
-
             print("Gerando QR Code PIX...")
             print("PIX recebido!")
-
-            self.upd_st(id, 'aprovado')
-
-            return True
-        
         elif m == 'boleto':
-
             print("Gerando boleto...")
             print("Boleto gerado!")
+        elif m == 'crypto':
+            print("Processando pagamento em criptomoeda...")
 
-            return True
+        # strategy.process_payment expects the domain Order type; cast to Any
+        accepted = strategy.process_payment(cast(Any, order_like), vl)
+
+        # Legacy semantics: cartao and pix auto-approve; boleto does not.
+        if accepted and m in ('cartao', 'pix'):
+            self.upd_st(id, 'aprovado')
+
+        return accepted
         
-        else:
 
-            print("Metodo de pagamento invalido!")
-
-            return False
-        
-
-    def validar_estoque(self, its):
+    def validar_estoque(self, its: List[Dict[str, Any]]) -> bool:
 
         # integrar com sistema de estoque externo
         est = {
@@ -234,7 +252,7 @@ class Sis:
         return True
     
 
-    def cancelar_pedido(self, id):
+    def cancelar_pedido(self, id: int) -> None:
 
         # cancela sem validar regras de negocio
         self.c.execute(
@@ -247,7 +265,7 @@ class Sis:
         print(f"Pedido {id} cancelado")
 
     
-    def close(self):
+    def close(self) -> None:
         self.db.close()
 
 
@@ -255,7 +273,7 @@ class PedEspecial(Sis):
     pass
     
 
-def main():
+def main() -> None:
     s = Sis()
 
     its1 = [
