@@ -11,7 +11,10 @@ dt = created_at
 tp = customer_type
 """
 
-def create_tables(db):
+from typing import Any
+
+
+def create_tables(db: Any) -> None:
     db.execute("""
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY,
