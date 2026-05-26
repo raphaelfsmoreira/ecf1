@@ -3,7 +3,18 @@ from datetime import datetime
 
 from src.models.order import Order
 from src.models.order_item import OrderItem
-from src.models.enums import CustomerType, DiscountType, OrderStatus
+from src.models.enums import CustomerType, OrderStatus
+from src.services.discount_service import DiscountService
+
+'''
+A ordem de aplicação de descontos segue:
+
+1. calcula total dos itens
+2. aplica descontos dos itens, incluindo volume (utilizando discountService que é ditado pelo strategy)
+3. depois aplica desconto do tipo de cliente 
+
+
+'''
 
 
 class OrderFactory(ABC):
@@ -11,16 +22,11 @@ class OrderFactory(ABC):
     def create_order(self, customer_name: str, items: list[OrderItem]) -> Order:
         pass
 
+    def __init__(self, discount_service: DiscountService | None = None) -> None:
+        self._discount_service = discount_service or DiscountService()
+
     def _calculate_items_total(self, items: list[OrderItem]) -> float:
-        total = 0.0
-        for item in items:
-            if item.discount_type in (DiscountType.NORMAL, DiscountType.FREE_SHIPPING):
-                total += item.unit_price * item.quantity
-            elif item.discount_type == DiscountType.DISCOUNT_10:
-                total += item.unit_price * item.quantity * 0.9
-            elif item.discount_type == DiscountType.DISCOUNT_20:
-                total += item.unit_price * item.quantity * 0.8
-        return total
+        return self._discount_service.calculate_items_total(items)
 
 
 class NormalOrderFactory(OrderFactory):
