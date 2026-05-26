@@ -27,8 +27,11 @@ class BoletoPaymentProcessor(PaymentProcessor):
 
 
 class CryptoPaymentProcessor(PaymentProcessor):
+    FEE_RATE = 0.02
+
     def process(self, order: Order, paid_amount: float) -> bool:
-        return paid_amount >= order.total_amount
+        total_with_fee = order.total_amount * (1 + self.FEE_RATE)
+        return paid_amount >= total_with_fee
 
     def approves_immediately(self) -> bool:
         return True
