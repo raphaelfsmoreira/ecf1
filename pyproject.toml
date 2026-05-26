@@ -10,7 +10,7 @@ authors=[
 
 readme="README.md"
 
-dependecies=[
+dependencies=[
     "pytest==9.0.3"
 ]
 
