@@ -5,7 +5,7 @@ from src.models.order_item import OrderItem
 from src.factories.payment_processor_factory import PaymentProcessorFactory
 from src.factories.notification_factory import NotificationFactory
 from src.services.notification_service import NotificationService
-
+from src.models.order import Order
 
 class OrderService:
     def __init__(
@@ -51,8 +51,12 @@ class OrderService:
 
         return True
 
-    def _notify(self, order, message: str) -> None:
+    def _notify(self, order: Order, message: str) -> None:
         notification_service = self._notification_service
+
         if notification_service is None:
-            notification_service = self._notification_factory.create_for_customer(order.customer_type)
+            notification_service = self._notification_factory.create_for_customer(
+                order.customer_type
+            )
+
         notification_service.notify(order, message)
