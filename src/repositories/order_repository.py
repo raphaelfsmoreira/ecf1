@@ -7,7 +7,7 @@ from src.database.database import SQLiteDatabase
 
 from src.models.order import Order
 from src.models.order_item import OrderItem
-from src.models.enums import CustomerType, DiscountType, OrderStatus
+from src.models.enums import CustomerType, DiscountType, OrderStatus, PaymentType
 
 
 # Nada como criar um ORM na mão...
@@ -154,3 +154,23 @@ class OrderRepository(OrderRepositoryInterface):
     def cancel_order(self, order_id: int) -> None:
 
         self.update_status(order_id, OrderStatus.CANCELLED)
+
+    def update_payment_type(
+            self,
+            order_id: int,
+            payment_type: PaymentType,
+    ) -> None:
+
+        self.db.execute(
+            '''
+            UPDATE orders
+            SET payment_type = ?
+            WHERE id = ?
+            ''',
+            (
+                payment_type.value,
+                order_id,
+            )
+        )
+
+        self.db.commit()

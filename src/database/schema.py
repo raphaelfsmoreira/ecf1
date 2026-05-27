@@ -22,7 +22,8 @@ def create_tables(db: SQLiteDatabase) -> None:
             total_amount REAL NOT NULL,
             status TEXT NOT NULL,
             created_at TEXT NOT NULL,
-            customer_type TEXT NOT NULL
+            customer_type TEXT NOT NULL,
+            payment_type TEXT
         )
     """)
     db.commit()
