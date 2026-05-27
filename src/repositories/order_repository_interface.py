@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from src.models.order import Order
-from src.models.enums import OrderStatus
+from src.models.enums import OrderStatus, PaymentType
 
 
 # Definindo o contrato do Repositorio de Pedidos...
@@ -17,6 +17,10 @@ class OrderRepositoryInterface(ABC):
 
     @abstractmethod
     def update_status(self, order_id: int, status: OrderStatus) -> None:
+        pass
+
+    @abstractmethod
+    def update_payment_type(self, order_id: int, payment_type: PaymentType) -> None:
         pass
 
     @abstractmethod

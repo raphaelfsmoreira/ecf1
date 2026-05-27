@@ -10,9 +10,17 @@ authors=[
 
 readme="README.md"
 
-dependecies=[
+dependencies=[
     "pytest==9.0.3"
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+# Removendo o codigo legado e main da checkagem do mypy
+[tool.mypy]
+strict = true
+exclude = [
+    "src/legacy.py",
+    "src/main.py"
+]

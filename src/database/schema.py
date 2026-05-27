@@ -1,3 +1,5 @@
+from src.database.database import SQLiteDatabase
+
 # Em projetos reais o banco já vai estar inicializado... Então essa parte
 # de infraestrutura não estaria no código.
 # Lembrar de inicializar a tabela no início da aplicação na main.py.
@@ -11,7 +13,7 @@ dt = created_at
 tp = customer_type
 """
 
-def create_tables(db):
+def create_tables(db: SQLiteDatabase) -> None:
     db.execute("""
         CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY,
