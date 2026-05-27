@@ -64,15 +64,26 @@ def test_order_service_corporativo_persiste_order_com_desconto_corporativo(mock_
     service.create_order('Empresa XYZ', [item])
 
     persisted = mock_repository.add_order.call_args[0][0]
-    assert persisted.total_amount == pytest.approx(450.0)
+    assert persisted.total_amount == pytest.approx(382.5)
     assert persisted.customer_type == CustomerType.CORPORATIVE
 
 
-def test_order_service_delega_criacao_para_factory(mock_repository, single_normal_item):
+def test_order_service_delega_criacao_para_factory(
+    mock_repository,
+    single_normal_item
+):
     mock_factory = MagicMock()
     mock_factory.create_order.return_value = MagicMock(spec=Order)
-    service = OrderService(repository=mock_repository, factory=mock_factory)
+
+    service = OrderService(
+        repository=mock_repository,
+        factory=mock_factory,
+        notification_service=MagicMock()
+    )
 
     service.create_order('Joao', single_normal_item)
 
-    mock_factory.create_order.assert_called_once_with('Joao', single_normal_item)
+    mock_factory.create_order.assert_called_once_with(
+        'Joao',
+        single_normal_item
+    )

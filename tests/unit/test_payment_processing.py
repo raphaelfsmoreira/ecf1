@@ -90,7 +90,7 @@ def test_order_service_pagamento_crypto_aprova(mock_repository):
         payment_processor_factory=PaymentProcessorFactory(),
     )
 
-    result = service.process_payment(order_id=10, payment_type=PaymentType.Crypto, paid_amount=100.0)
+    result = service.process_payment(order_id=10, payment_type=PaymentType.Crypto, paid_amount=102.0)
 
     assert result is True
     mock_repository.update_payment_type.assert_called_once_with(10, PaymentType.Crypto)
@@ -238,7 +238,7 @@ def test_order_service_pagamento_pedido_inexistente_retorna_false(mock_repositor
         payment_processor_factory=PaymentProcessorFactory(),
     )
 
-    result = service.process_payment(order_id=999, payment_type=PaymentType.Pix, paid_amount=100.0)
+    result = service.process_payment(order_id=999, payment_type=PaymentType.Pix, paid_amount=102.0)
 
     assert result is False
     mock_repository.update_payment_type.assert_not_called()

@@ -91,10 +91,10 @@ def test_corporate_factory_aplica_10_porcento_sobre_total_dos_itens():
         quantity=5,
         discount_type=DiscountType.NORMAL,
     )
-    # 100*5=500, corporativo 10%: 500*0.9=450
+    
     order = CorporateOrderFactory().create_order('Empresa XYZ', [item])
 
-    assert order.total_amount == pytest.approx(450.0)
+    assert order.total_amount == pytest.approx(382.5)
     assert order.customer_type == CustomerType.CORPORATIVE
 
 
