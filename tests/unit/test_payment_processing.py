@@ -1,6 +1,13 @@
+from datetime import datetime
+from unittest.mock import MagicMock
+
 import pytest
 
+from src.models.enums import CustomerType, DiscountType, OrderStatus, PaymentType
 from src.models.order import Order
+from src.models.order_item import OrderItem
+from src.services.order_service import OrderService
+from src.factories.payment_processor_factory import PaymentProcessorFactory
 
 
 @pytest.fixture
@@ -83,7 +90,21 @@ def test_order_service_pagamento_insuficiente_falha(mock_repository):
     mock_repository.update_status.assert_not_called()
 
 
-def test_order_service_pagamento_crypto_aprova(mock_repository):
+def test_order_service_pagamento_crypto_exige_taxa_de_dois_por_cento(mock_repository):
+    service = OrderService(
+        repository=mock_repository,
+        factory=MagicMock(),
+        payment_processor_factory=PaymentProcessorFactory(),
+    )
+
+    result = service.process_payment(order_id=10, payment_type=PaymentType.Crypto, paid_amount=100.0)
+
+    assert result is False
+    mock_repository.update_payment_type.assert_called_once_with(10, PaymentType.Crypto)
+    mock_repository.update_status.assert_not_called()
+
+
+def test_order_service_pagamento_crypto_aprova_com_taxa_de_dois_por_cento(mock_repository):
     service = OrderService(
         repository=mock_repository,
         factory=MagicMock(),
@@ -105,7 +126,7 @@ def test_order_service_pagamento_pedido_inexistente_retorna_false(mock_repositor
         payment_processor_factory=PaymentProcessorFactory(),
     )
 
-    result = service.process_payment(order_id=999, payment_type=PaymentType.Pix, paid_amount=100.0)
+    result = service.process_payment(order_id=999, payment_type=PaymentType.Pix, paid_amount=102.0)
 
     assert result is False
     mock_repository.update_payment_type.assert_not_called()
