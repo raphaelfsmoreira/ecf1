@@ -1,13 +1,6 @@
-from datetime import datetime
-from unittest.mock import MagicMock
-
 import pytest
 
-from src.models.enums import CustomerType, DiscountType, OrderStatus, PaymentType
 from src.models.order import Order
-from src.models.order_item import OrderItem
-from src.services.order_service import OrderService
-from src.services.payment_processor_factory import PaymentProcessorFactory
 
 
 @pytest.fixture
@@ -126,7 +119,7 @@ from src.models.enums import CustomerType, DiscountType, OrderStatus, PaymentTyp
 from src.models.order import Order
 from src.models.order_item import OrderItem
 from src.services.order_service import OrderService
-from src.services.payment_processor_factory import PaymentProcessorFactory
+from src.factories.payment_processor_factory import PaymentProcessorFactory
 
 
 @pytest.fixture

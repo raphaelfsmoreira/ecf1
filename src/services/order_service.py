@@ -2,7 +2,7 @@ from src.factories.order_factory import OrderFactory
 from src.models.enums import OrderStatus, PaymentType
 from src.repositories.order_repository_interface import OrderRepositoryInterface
 from src.models.order_item import OrderItem
-from src.services.payment_processor_factory import PaymentProcessorFactory
+from src.factories.payment_processor_factory import PaymentProcessorFactory
 from src.factories.notification_factory import NotificationFactory
 from src.services.notification_service import NotificationService
 

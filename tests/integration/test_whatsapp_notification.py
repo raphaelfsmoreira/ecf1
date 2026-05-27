@@ -4,7 +4,7 @@ from src.models.order_item import OrderItem
 from src.repositories.sqlite_order_repository import SqliteOrderRepository
 from src.services.notification_service import create_default_notification_service
 from src.services.order_service import OrderService
-from src.services.payment_processor_factory import PaymentProcessorFactory
+from src.factories.payment_processor_factory import PaymentProcessorFactory
 
 
 def test_order_service_notifica_whatsapp_ao_criar_pedido(tmp_path, monkeypatch, capsys):

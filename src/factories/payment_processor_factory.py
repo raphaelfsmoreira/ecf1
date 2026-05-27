@@ -1,6 +1,6 @@
 from src.models.enums import PaymentType
 from src.services.payment_processor import PaymentProcessor
-from src.services.payment_strategies import (
+from src.strategies.payment_strategies import (
     BoletoPaymentProcessor,
     CardPaymentProcessor,
     CryptoPaymentProcessor,

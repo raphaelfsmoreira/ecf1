@@ -2,15 +2,7 @@ from src.factories.order_factory import NormalOrderFactory
 from src.models.enums import DiscountType, PaymentType, OrderStatus
 from src.models.order_item import OrderItem
 from src.repositories.sqlite_order_repository import SqliteOrderRepository
-from src.services.payment_processor_factory import PaymentProcessorFactory
-from src.services.order_service import OrderService
-
-
-from src.factories.order_factory import NormalOrderFactory
-from src.models.enums import DiscountType, PaymentType, OrderStatus
-from src.models.order_item import OrderItem
-from src.repositories.sqlite_order_repository import SqliteOrderRepository
-from src.services.payment_processor_factory import PaymentProcessorFactory
+from src.factories.payment_processor_factory import PaymentProcessorFactory
 from src.services.order_service import OrderService
 
 
